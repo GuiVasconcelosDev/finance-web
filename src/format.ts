@@ -11,7 +11,9 @@ export function formatCurrency(value: number): string {
 
 
 export function formatDate(isoDate: string): string {
-  const [year, month, day] = isoDate.split("-");
+  const datePart = isoDate?.split("T")[0] ?? "";
+  const [year, month, day] = datePart.split("-");
+  if (!year || !month || !day) return "-";
   return `${day}/${month}/${year}`;
 }
 

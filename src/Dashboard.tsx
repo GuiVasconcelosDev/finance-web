@@ -53,7 +53,11 @@ export function Dashboard({ onLogout }: DashboardProps) {
           onLogout(); // token expirado ou inválido
           return;
         }
-        setError("Não foi possível carregar o dashboard.");
+        if (err instanceof ApiError && (err.status === 0 || err.status === 502 || err.status === 503 || err.status === 504)) {
+          setError("O dashboard não conseguiu acessar a API. Verifique se o backend está rodando em http://localhost:8080.");
+        } else {
+          setError("Não foi possível carregar o dashboard.");
+        }
       }
     }
 
@@ -80,6 +84,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
   }
 
   const { summary, balances, categories, transactions } = data;
+  const accounts = Array.isArray(balances.accounts) ? balances.accounts : null;
 
   return (
     <main className="page">
@@ -125,14 +130,20 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
         <section className="panel">
           <h2>Contas</h2>
-          <ul className="list">
-            {balances.accounts.map((a) => (
-              <li key={a.accountId} className="row">
-                <span>{a.name}</span>
-                <span>{formatCurrency(a.balance)}</span>
-              </li>
-            ))}
-          </ul>
+          {accounts === null ? (
+            <p className="muted">Não foi possível carregar a lista de contas da API.</p>
+          ) : accounts.length === 0 ? (
+            <p className="muted">Nenhuma conta cadastrada.</p>
+          ) : (
+            <ul className="list">
+              {accounts.map((a) => (
+                <li key={a.accountId} className="row">
+                  <span>{a.name}</span>
+                  <span>{formatCurrency(a.balance)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
 
